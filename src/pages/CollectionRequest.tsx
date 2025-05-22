@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, MapPin, Calendar, Check, Truck } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Check, Truck } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -153,7 +153,7 @@ const CollectionRequest = () => {
               
               <div className="space-y-2 pt-4">
                 <h3 className="text-lg font-medium flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <CalendarIcon className="h-5 w-5 text-primary" />
                   Collection Date & Time
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -193,6 +193,7 @@ const CollectionRequest = () => {
                                        date.getDay() === 0
                               }}
                               initialFocus
+                              className="pointer-events-auto"
                             />
                           </PopoverContent>
                         </Popover>
