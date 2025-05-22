@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import RegisterItem from "./pages/RegisterItem";
 import CollectionRequest from "./pages/CollectionRequest";
 import Information from "./pages/Information";
+import Marketplace from "./pages/Marketplace";
 import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => {
               <Route path="/register" element={<RegisterItem />} />
               <Route path="/request" element={<CollectionRequest />} />
               <Route path="/information" element={<Information />} />
+              <Route path="/marketplace" element={<Marketplace />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
