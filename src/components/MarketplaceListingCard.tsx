@@ -84,7 +84,7 @@ const MarketplaceListingCard = ({ listing, onContactSeller }: MarketplaceListing
         <div className="flex justify-between items-start gap-2 mb-2">
           <h3 className="text-lg font-semibold line-clamp-2">{listing.title}</h3>
           {!listing.isFree && (
-            <span className="text-lg font-bold">${listing.price}</span>
+            <span className="text-lg font-bold">R{listing.price}</span>
           )}
         </div>
         
