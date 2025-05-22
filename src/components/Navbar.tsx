@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navbar = () => {
@@ -57,6 +57,16 @@ const Navbar = () => {
             >
               <ShoppingBagIcon className="h-4 w-4 mr-1" />
               Marketplace
+            </Button>
+          </Link>
+          <Link to="/locator">
+            <Button 
+              variant={isActive('/locator') ? "default" : "ghost"}
+              className="flutter-button"
+              size="sm"
+            >
+              <MapPinIcon className="h-4 w-4 mr-1" />
+              Recycling Map
             </Button>
           </Link>
           <Link to="/information">
