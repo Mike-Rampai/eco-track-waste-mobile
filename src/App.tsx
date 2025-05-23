@@ -12,6 +12,7 @@ import CollectionRequest from "./pages/CollectionRequest";
 import Information from "./pages/Information";
 import Marketplace from "./pages/Marketplace";
 import RecycleLocator from "./pages/RecycleLocator";
+import Wallet from "./pages/Wallet";
 import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => {
               <Route path="/information" element={<Information />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/locator" element={<RecycleLocator />} />
+              <Route path="/wallet" element={<Wallet />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
