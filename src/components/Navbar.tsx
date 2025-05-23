@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navbar = () => {
@@ -77,6 +77,16 @@ const Navbar = () => {
             >
               <WalletIcon className="h-4 w-4 mr-1" />
               Wallet
+            </Button>
+          </Link>
+          <Link to="/ai-assistant">
+            <Button 
+              variant={isActive('/ai-assistant') ? "default" : "ghost"}
+              className="flutter-button"
+              size="sm"
+            >
+              <BotIcon className="h-4 w-4 mr-1" />
+              AI Assistant
             </Button>
           </Link>
           <Link to="/information">
