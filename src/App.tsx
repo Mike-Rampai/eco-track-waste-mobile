@@ -14,12 +14,13 @@ import Marketplace from "./pages/Marketplace";
 import RecycleLocator from "./pages/RecycleLocator";
 import Wallet from "./pages/Wallet";
 import AIAssistant from "./pages/AIAssistant";
+import Auth from "./pages/Auth";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // First create the QueryClient, then wrap everything with the provider
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -27,14 +28,27 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
-              <Route path="/register" element={<RegisterItem />} />
-              <Route path="/request" element={<CollectionRequest />} />
+              <Route path="/register" element={
+                <ProtectedRoute>
+                  <RegisterItem />
+                </ProtectedRoute>
+              } />
+              <Route path="/request" element={
+                <ProtectedRoute>
+                  <CollectionRequest />
+                </ProtectedRoute>
+              } />
               <Route path="/information" element={<Information />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/locator" element={<RecycleLocator />} />
-              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/wallet" element={
+                <ProtectedRoute>
+                  <Wallet />
+                </ProtectedRoute>
+              } />
               <Route path="/ai-assistant" element={<AIAssistant />} />
               <Route path="*" element={<NotFound />} />
             </Route>

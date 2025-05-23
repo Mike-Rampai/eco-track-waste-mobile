@@ -9,7 +9,222 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      collection_request_items: {
+        Row: {
+          collection_request_id: string | null
+          created_at: string | null
+          e_waste_item_id: string | null
+          id: string
+        }
+        Insert: {
+          collection_request_id?: string | null
+          created_at?: string | null
+          e_waste_item_id?: string | null
+          id?: string
+        }
+        Update: {
+          collection_request_id?: string | null
+          created_at?: string | null
+          e_waste_item_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_request_items_collection_request_id_fkey"
+            columns: ["collection_request_id"]
+            isOneToOne: false
+            referencedRelation: "collection_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_request_items_e_waste_item_id_fkey"
+            columns: ["e_waste_item_id"]
+            isOneToOne: false
+            referencedRelation: "e_waste_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_requests: {
+        Row: {
+          address: string
+          city: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          postal_code: string
+          scheduled_date: string | null
+          state: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          postal_code: string
+          scheduled_date?: string | null
+          state: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          postal_code?: string
+          scheduled_date?: string | null
+          state?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      e_waste_items: {
+        Row: {
+          category: string
+          condition: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          category: string
+          condition: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          category?: string
+          condition?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          payment_intent_id: string | null
+          payment_method: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          eco_points: number | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          eco_points?: number | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          eco_points?: number | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

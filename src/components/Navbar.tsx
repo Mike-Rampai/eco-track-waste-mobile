@@ -1,11 +1,19 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -19,7 +27,7 @@ const Navbar = () => {
           <span className="text-2xl font-bold flutter-text-gradient">E-Cycle</span>
         </Link>
         
-        <nav className="flex flex-wrap justify-center gap-2">
+        <nav className="flex flex-wrap justify-center gap-2 items-center">
           <Link to="/">
             <Button 
               variant={isActive('/') ? "default" : "ghost"}
@@ -29,26 +37,42 @@ const Navbar = () => {
               Home
             </Button>
           </Link>
-          <Link to="/register">
-            <Button 
-              variant={isActive('/register') ? "default" : "ghost"}
-              className="flutter-button"
-              size="sm"
-            >
-              <PlusCircleIcon className="h-4 w-4 mr-1" />
-              Register Item
-            </Button>
-          </Link>
-          <Link to="/request">
-            <Button 
-              variant={isActive('/request') ? "default" : "ghost"}
-              className="flutter-button"
-              size="sm"
-            >
-              <CalendarIcon className="h-4 w-4 mr-1" />
-              Collection
-            </Button>
-          </Link>
+          
+          {user ? (
+            <>
+              <Link to="/register">
+                <Button 
+                  variant={isActive('/register') ? "default" : "ghost"}
+                  className="flutter-button"
+                  size="sm"
+                >
+                  <PlusCircleIcon className="h-4 w-4 mr-1" />
+                  Register Item
+                </Button>
+              </Link>
+              <Link to="/request">
+                <Button 
+                  variant={isActive('/request') ? "default" : "ghost"}
+                  className="flutter-button"
+                  size="sm"
+                >
+                  <CalendarIcon className="h-4 w-4 mr-1" />
+                  Collection
+                </Button>
+              </Link>
+              <Link to="/wallet">
+                <Button 
+                  variant={isActive('/wallet') ? "default" : "ghost"}
+                  className="flutter-button"
+                  size="sm"
+                >
+                  <WalletIcon className="h-4 w-4 mr-1" />
+                  Wallet
+                </Button>
+              </Link>
+            </>
+          ) : null}
+          
           <Link to="/marketplace">
             <Button 
               variant={isActive('/marketplace') ? "default" : "ghost"}
@@ -67,16 +91,6 @@ const Navbar = () => {
             >
               <MapPinIcon className="h-4 w-4 mr-1" />
               Recycling Map
-            </Button>
-          </Link>
-          <Link to="/wallet">
-            <Button 
-              variant={isActive('/wallet') ? "default" : "ghost"}
-              className="flutter-button"
-              size="sm"
-            >
-              <WalletIcon className="h-4 w-4 mr-1" />
-              Wallet
             </Button>
           </Link>
           <Link to="/ai-assistant">
@@ -99,6 +113,29 @@ const Navbar = () => {
               Info
             </Button>
           </Link>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="flutter-button">
+                  <UserIcon className="h-4 w-4 mr-1" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOutIcon className="h-4 w-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth">
+              <Button variant="default" size="sm" className="flutter-button">
+                Sign In
+              </Button>
+            </Link>
+          )}
         </nav>
       </div>
     </header>
