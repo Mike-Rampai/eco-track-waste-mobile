@@ -42,7 +42,11 @@ const App = () => {
                 </ProtectedRoute>
               } />
               <Route path="/information" element={<Information />} />
-              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/marketplace" element={
+                <ProtectedRoute>
+                  <Marketplace />
+                </ProtectedRoute>
+              } />
               <Route path="/locator" element={<RecycleLocator />} />
               <Route path="/wallet" element={
                 <ProtectedRoute>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -10,6 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const Navbar = () => {
   const location = useLocation();
@@ -17,6 +23,50 @@ const Navbar = () => {
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const ProtectedNavButton = ({ to, children, icon: Icon, label }: { 
+    to: string; 
+    children: React.ReactNode; 
+    icon: React.ComponentType<any>; 
+    label: string;
+  }) => {
+    if (user) {
+      return (
+        <Link to={to}>
+          <Button 
+            variant={isActive(to) ? "default" : "ghost"}
+            className="flutter-button"
+            size="sm"
+          >
+            <Icon className="h-4 w-4 mr-1" />
+            {children}
+          </Button>
+        </Link>
+      );
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link to="/auth">
+              <Button 
+                variant="ghost"
+                className="flutter-button opacity-60"
+                size="sm"
+              >
+                <LockIcon className="h-4 w-4 mr-1" />
+                {children}
+              </Button>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Sign in to access {label}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   };
 
   return (
@@ -38,51 +88,38 @@ const Navbar = () => {
             </Button>
           </Link>
           
-          {user ? (
-            <>
-              <Link to="/register">
-                <Button 
-                  variant={isActive('/register') ? "default" : "ghost"}
-                  className="flutter-button"
-                  size="sm"
-                >
-                  <PlusCircleIcon className="h-4 w-4 mr-1" />
-                  Register Item
-                </Button>
-              </Link>
-              <Link to="/request">
-                <Button 
-                  variant={isActive('/request') ? "default" : "ghost"}
-                  className="flutter-button"
-                  size="sm"
-                >
-                  <CalendarIcon className="h-4 w-4 mr-1" />
-                  Collection
-                </Button>
-              </Link>
-              <Link to="/wallet">
-                <Button 
-                  variant={isActive('/wallet') ? "default" : "ghost"}
-                  className="flutter-button"
-                  size="sm"
-                >
-                  <WalletIcon className="h-4 w-4 mr-1" />
-                  Wallet
-                </Button>
-              </Link>
-            </>
-          ) : null}
+          <ProtectedNavButton 
+            to="/register" 
+            icon={PlusCircleIcon} 
+            label="item registration"
+          >
+            Register Item
+          </ProtectedNavButton>
+
+          <ProtectedNavButton 
+            to="/request" 
+            icon={CalendarIcon} 
+            label="collection requests"
+          >
+            Collection
+          </ProtectedNavButton>
+
+          <ProtectedNavButton 
+            to="/marketplace" 
+            icon={ShoppingBagIcon} 
+            label="marketplace"
+          >
+            Marketplace
+          </ProtectedNavButton>
+
+          <ProtectedNavButton 
+            to="/wallet" 
+            icon={WalletIcon} 
+            label="wallet"
+          >
+            Wallet
+          </ProtectedNavButton>
           
-          <Link to="/marketplace">
-            <Button 
-              variant={isActive('/marketplace') ? "default" : "ghost"}
-              className="flutter-button"
-              size="sm"
-            >
-              <ShoppingBagIcon className="h-4 w-4 mr-1" />
-              Marketplace
-            </Button>
-          </Link>
           <Link to="/locator">
             <Button 
               variant={isActive('/locator') ? "default" : "ghost"}
