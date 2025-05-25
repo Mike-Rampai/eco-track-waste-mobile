@@ -66,19 +66,19 @@ const Index = () => {
               title="Devices Recycled"
               value="12,437"
               description="Electronic devices properly recycled"
-              icon={RecycleIcon}
+              icon={<RecycleIcon className="h-8 w-8" />}
             />
             <StatCard
               title="CO₂ Saved"
               value="2.1M kg"
               description="Carbon emissions prevented"
-              icon={SmartphoneIcon}
+              icon={<SmartphoneIcon className="h-8 w-8" />}
             />
             <StatCard
               title="Active Users"
               value="5,892"
               description="Community members making a difference"
-              icon={LaptopIcon}
+              icon={<LaptopIcon className="h-8 w-8" />}
             />
           </div>
         </div>
