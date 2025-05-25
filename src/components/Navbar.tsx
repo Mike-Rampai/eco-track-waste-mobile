@@ -36,11 +36,12 @@ const Navbar = () => {
         <Link to={to}>
           <Button 
             variant={isActive(to) ? "default" : "ghost"}
-            className="flutter-button"
+            className="flutter-button whitespace-nowrap"
             size="sm"
           >
-            <Icon className="h-4 w-4 mr-1" />
-            {children}
+            <Icon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">{children}</span>
+            <span className="sm:hidden text-xs">{children.toString().split(' ')[0]}</span>
           </Button>
         </Link>
       );
@@ -53,11 +54,12 @@ const Navbar = () => {
             <Link to="/auth">
               <Button 
                 variant="ghost"
-                className="flutter-button opacity-60"
+                className="flutter-button opacity-60 whitespace-nowrap"
                 size="sm"
               >
-                <LockIcon className="h-4 w-4 mr-1" />
-                {children}
+                <LockIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden sm:inline">{children}</span>
+                <span className="sm:hidden text-xs">{children.toString().split(' ')[0]}</span>
               </Button>
             </Link>
           </TooltipTrigger>
@@ -71,20 +73,20 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
-        <Link to="/" className="flex items-center mb-4 sm:mb-0">
-          <RecycleIcon className="h-8 w-8 text-eco-green-dark mr-2" strokeWidth={1.5} />
-          <span className="text-2xl font-bold flutter-text-gradient">E-Cycle</span>
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col sm:flex-row justify-between items-center">
+        <Link to="/" className="flex items-center mb-2 sm:mb-0">
+          <RecycleIcon className="h-6 w-6 sm:h-8 sm:w-8 text-eco-green-dark mr-2" strokeWidth={1.5} />
+          <span className="text-lg sm:text-2xl font-bold flutter-text-gradient">E-Cycle</span>
         </Link>
         
-        <nav className="flex flex-wrap justify-center gap-2 items-center">
+        <nav className="flex overflow-x-auto gap-1 sm:gap-2 items-center w-full sm:w-auto pb-safe scrollbar-hide">
           <Link to="/">
             <Button 
               variant={isActive('/') ? "default" : "ghost"}
-              className="flutter-button"
+              className="flutter-button whitespace-nowrap"
               size="sm"
             >
-              Home
+              <span className="text-xs sm:text-sm">Home</span>
             </Button>
           </Link>
           
@@ -123,40 +125,44 @@ const Navbar = () => {
           <Link to="/locator">
             <Button 
               variant={isActive('/locator') ? "default" : "ghost"}
-              className="flutter-button"
+              className="flutter-button whitespace-nowrap"
               size="sm"
             >
-              <MapPinIcon className="h-4 w-4 mr-1" />
-              Recycling Map
+              <MapPinIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Recycling Map</span>
+              <span className="sm:hidden text-xs">Map</span>
             </Button>
           </Link>
           <Link to="/ai-assistant">
             <Button 
               variant={isActive('/ai-assistant') ? "default" : "ghost"}
-              className="flutter-button"
+              className="flutter-button whitespace-nowrap"
               size="sm"
             >
-              <BotIcon className="h-4 w-4 mr-1" />
-              AI Assistant
+              <BotIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">AI Assistant</span>
+              <span className="sm:hidden text-xs">AI</span>
             </Button>
           </Link>
           <Link to="/information">
             <Button 
               variant={isActive('/information') ? "default" : "ghost"}
-              className="flutter-button"
+              className="flutter-button whitespace-nowrap"
               size="sm"
             >
-              <InfoIcon className="h-4 w-4 mr-1" />
-              Info
+              <InfoIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Info</span>
+              <span className="sm:hidden text-xs">Info</span>
             </Button>
           </Link>
 
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flutter-button">
-                  <UserIcon className="h-4 w-4 mr-1" />
-                  Account
+                <Button variant="ghost" size="sm" className="flutter-button whitespace-nowrap">
+                  <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">Account</span>
+                  <span className="sm:hidden text-xs">User</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -168,8 +174,8 @@ const Navbar = () => {
             </DropdownMenu>
           ) : (
             <Link to="/auth">
-              <Button variant="default" size="sm" className="flutter-button">
-                Sign In
+              <Button variant="default" size="sm" className="flutter-button whitespace-nowrap">
+                <span className="text-xs sm:text-sm">Sign In</span>
               </Button>
             </Link>
           )}
