@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { UserIcon, EditIcon, SaveIcon, WifiOffIcon } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useOfflineMode } from '@/hooks/useOfflineMode';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import ProfileForm from '@/components/profile/ProfileForm';
+import OfflineModeCard from '@/components/profile/OfflineModeCard';
 
 interface UserProfile {
   id: string;
@@ -133,10 +132,8 @@ const Profile = () => {
     setProfile({ ...profile, [field]: value });
   };
 
-  const formatTimeRemaining = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  const handleToggleEdit = () => {
+    setIsEditing(!isEditing);
   };
 
   if (loading) {
@@ -155,166 +152,30 @@ const Profile = () => {
           <p className="text-muted-foreground">Manage your account information and preferences</p>
         </div>
 
-        {/* Offline Mode Card */}
-        <Card className="flutter-card mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <WifiOffIcon className="h-5 w-5" />
-              Offline Mode
-            </CardTitle>
-            <CardDescription>
-              Access limited app features for 15 minutes without internet connection
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isOffline ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">
-                    Offline mode active
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Time remaining: {formatTimeRemaining(offlineTimeRemaining)}
-                  </p>
-                </div>
-                <div className="h-2 w-32 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-orange-500 transition-all duration-1000"
-                    style={{ width: `${(offlineTimeRemaining / (15 * 60)) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <Button 
-                onClick={startOfflineMode}
-                variant="outline"
-                className="flutter-button"
-              >
-                <WifiOffIcon className="h-4 w-4 mr-2" />
-                Start Offline Mode
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <OfflineModeCard 
+          isOffline={isOffline}
+          offlineTimeRemaining={offlineTimeRemaining}
+          onStartOfflineMode={startOfflineMode}
+        />
 
-        {/* Profile Information Card */}
         <Card className="flutter-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal details</CardDescription>
-              </div>
-              <Button
-                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                disabled={saving}
-                className="flutter-button"
-              >
-                {isEditing ? (
-                  <>
-                    <SaveIcon className="h-4 w-4 mr-2" />
-                    {saving ? 'Saving...' : 'Save'}
-                  </>
-                ) : (
-                  <>
-                    <EditIcon className="h-4 w-4 mr-2" />
-                    Edit
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardHeader>
+          <ProfileHeader 
+            isEditing={isEditing}
+            saving={saving}
+            onToggleEdit={handleToggleEdit}
+            onSave={handleSave}
+          />
           <CardContent className="space-y-6">
-            {/* Avatar Section */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={profile?.avatar_url || ''} />
-                <AvatarFallback>
-                  <UserIcon className="h-8 w-8" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-lg font-semibold">{profile?.full_name || 'No name set'}</h3>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
-                <p className="text-sm text-primary font-medium">
-                  {profile?.eco_points || 0} Eco Points
-                </p>
-              </div>
-            </div>
-
-            {/* Form Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={profile?.full_name || ''}
-                  onChange={(e) => handleInputChange('full_name', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
+            {profile && (
+              <>
+                <ProfileAvatar profile={profile} userEmail={user?.email} />
+                <ProfileForm 
+                  profile={profile}
+                  isEditing={isEditing}
+                  onInputChange={handleInputChange}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={profile?.phone || ''}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
-                  placeholder="Enter phone number"
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={profile?.address || ''}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
-                  placeholder="Enter street address"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={profile?.city || ''}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
-                  placeholder="Enter city"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  value={profile?.state || ''}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
-                  placeholder="Enter state"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">Postal Code</Label>
-                <Input
-                  id="postal_code"
-                  value={profile?.postal_code || ''}
-                  onChange={(e) => handleInputChange('postal_code', e.target.value)}
-                  disabled={!isEditing}
-                  className="flutter-input"
-                  placeholder="Enter postal code"
-                />
-              </div>
-            </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -37,7 +37,7 @@ export const useOfflineMode = () => {
       }
 
       if (data) {
-        const session = data as OfflineSession;
+        const session = data as unknown as OfflineSession;
         setCurrentSession(session);
         setIsOffline(true);
         const expiresAt = new Date(session.expires_at).getTime();
@@ -80,7 +80,7 @@ export const useOfflineMode = () => {
         return;
       }
 
-      const session = data as OfflineSession;
+      const session = data as unknown as OfflineSession;
       setCurrentSession(session);
       setIsOffline(true);
       setOfflineTimeRemaining(15 * 60); // 15 minutes in seconds
