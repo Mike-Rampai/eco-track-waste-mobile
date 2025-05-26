@@ -15,8 +15,10 @@ import RecycleLocator from "./pages/RecycleLocator";
 import Wallet from "./pages/Wallet";
 import AIAssistant from "./pages/AIAssistant";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OfflineIndicator from "./components/OfflineIndicator";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <OfflineIndicator />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -54,6 +57,11 @@ const App = () => {
                 </ProtectedRoute>
               } />
               <Route path="/ai-assistant" element={<AIAssistant />} />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

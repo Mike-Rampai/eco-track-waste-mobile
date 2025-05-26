@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon, SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useOfflineMode } from '@/hooks/useOfflineMode';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -20,18 +22,47 @@ import {
 const Navbar = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isOffline, getOfflineFeatures } = useOfflineMode();
+  const offlineFeatures = getOfflineFeatures();
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  const ProtectedNavButton = ({ to, children, icon: Icon, label }: { 
+  const ProtectedNavButton = ({ to, children, icon: Icon, label, offlineAllowed = false }: { 
     to: string; 
     children: React.ReactNode; 
     icon: React.ComponentType<any>; 
     label: string;
+    offlineAllowed?: boolean;
   }) => {
     if (user) {
+      const isDisabled = isOffline && !offlineAllowed;
+      
+      if (isDisabled) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost"
+                  className="flutter-button opacity-50 whitespace-nowrap cursor-not-allowed"
+                  size="sm"
+                  disabled
+                >
+                  <LockIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{children}</span>
+                  <span className="sm:hidden text-xs">{children.toString().split(' ')[0]}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Not available in offline mode</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
       return (
         <Link to={to}>
           <Button 
@@ -73,20 +104,20 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col sm:flex-row justify-between items-center">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row justify-between items-center">
         <Link to="/" className="flex items-center mb-2 sm:mb-0">
-          <RecycleIcon className="h-6 w-6 sm:h-8 sm:w-8 text-eco-green-dark mr-2" strokeWidth={1.5} />
-          <span className="text-lg sm:text-2xl font-bold flutter-text-gradient">E-Cycle</span>
+          <RecycleIcon className="h-5 w-5 sm:h-7 sm:w-7 text-eco-green-dark mr-2" strokeWidth={1.5} />
+          <span className="text-base sm:text-xl font-bold flutter-text-gradient">E-Cycle</span>
         </Link>
         
-        <nav className="flex overflow-x-auto gap-1 sm:gap-2 items-center w-full sm:w-auto pb-safe scrollbar-hide">
+        <nav className="flex overflow-x-auto gap-1 items-center w-full sm:w-auto pb-safe scrollbar-hide">
           <Link to="/">
             <Button 
               variant={isActive('/') ? "default" : "ghost"}
               className="flutter-button whitespace-nowrap"
               size="sm"
             >
-              <span className="text-xs sm:text-sm">Home</span>
+              <span className="text-xs">Home</span>
             </Button>
           </Link>
           
@@ -94,14 +125,16 @@ const Navbar = () => {
             to="/register" 
             icon={PlusCircleIcon} 
             label="item registration"
+            offlineAllowed={offlineFeatures.canRegisterItems}
           >
-            Register Item
+            Register
           </ProtectedNavButton>
 
           <ProtectedNavButton 
             to="/request" 
             icon={CalendarIcon} 
             label="collection requests"
+            offlineAllowed={offlineFeatures.canScheduleCollection}
           >
             Collection
           </ProtectedNavButton>
@@ -110,14 +143,16 @@ const Navbar = () => {
             to="/marketplace" 
             icon={ShoppingBagIcon} 
             label="marketplace"
+            offlineAllowed={offlineFeatures.canAccessMarketplace}
           >
-            Marketplace
+            Market
           </ProtectedNavButton>
 
           <ProtectedNavButton 
             to="/wallet" 
             icon={WalletIcon} 
             label="wallet"
+            offlineAllowed={offlineFeatures.canAccessWallet}
           >
             Wallet
           </ProtectedNavButton>
@@ -129,10 +164,11 @@ const Navbar = () => {
               size="sm"
             >
               <MapPinIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              <span className="hidden sm:inline">Recycling Map</span>
+              <span className="hidden sm:inline">Map</span>
               <span className="sm:hidden text-xs">Map</span>
             </Button>
           </Link>
+          
           <Link to="/ai-assistant">
             <Button 
               variant={isActive('/ai-assistant') ? "default" : "ghost"}
@@ -140,10 +176,11 @@ const Navbar = () => {
               size="sm"
             >
               <BotIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              <span className="hidden sm:inline">AI Assistant</span>
+              <span className="hidden sm:inline">AI</span>
               <span className="sm:hidden text-xs">AI</span>
             </Button>
           </Link>
+          
           <Link to="/information">
             <Button 
               variant={isActive('/information') ? "default" : "ghost"}
@@ -151,8 +188,7 @@ const Navbar = () => {
               size="sm"
             >
               <InfoIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              <span className="hidden sm:inline">Info</span>
-              <span className="sm:hidden text-xs">Info</span>
+              <span className="text-xs">Info</span>
             </Button>
           </Link>
 
@@ -166,6 +202,13 @@ const Navbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center">
+                    <SettingsIcon className="h-4 w-4 mr-2" />
+                    Profile Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   <LogOutIcon className="h-4 w-4 mr-2" />
                   Sign Out
@@ -175,7 +218,7 @@ const Navbar = () => {
           ) : (
             <Link to="/auth">
               <Button variant="default" size="sm" className="flutter-button whitespace-nowrap">
-                <span className="text-xs sm:text-sm">Sign In</span>
+                <span className="text-xs">Sign In</span>
               </Button>
             </Link>
           )}
