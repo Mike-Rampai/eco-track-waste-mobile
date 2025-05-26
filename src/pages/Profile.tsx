@@ -15,12 +15,12 @@ interface UserProfile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  postal_code: string | null;
-  eco_points: number;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  eco_points: number | null;
 }
 
 const Profile = () => {
@@ -64,11 +64,6 @@ const Profile = () => {
           id: user?.id!,
           full_name: user?.user_metadata?.full_name || '',
           avatar_url: user?.user_metadata?.avatar_url || null,
-          phone: null,
-          address: null,
-          city: null,
-          state: null,
-          postal_code: null,
           eco_points: 0,
         };
         
@@ -96,16 +91,20 @@ const Profile = () => {
 
     setSaving(true);
     try {
+      const updateData: any = {
+        full_name: profile.full_name,
+      };
+
+      // Only include additional fields if they exist in the database schema
+      if (profile.phone !== undefined) updateData.phone = profile.phone;
+      if (profile.address !== undefined) updateData.address = profile.address;
+      if (profile.city !== undefined) updateData.city = profile.city;
+      if (profile.state !== undefined) updateData.state = profile.state;
+      if (profile.postal_code !== undefined) updateData.postal_code = profile.postal_code;
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          full_name: profile.full_name,
-          phone: profile.phone,
-          address: profile.address,
-          city: profile.city,
-          state: profile.state,
-          postal_code: profile.postal_code,
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) {

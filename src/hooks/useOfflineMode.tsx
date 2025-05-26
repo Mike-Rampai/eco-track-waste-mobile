@@ -22,7 +22,7 @@ export const useOfflineMode = () => {
 
     try {
       const { data, error } = await supabase
-        .from('offline_sessions')
+        .from('offline_sessions' as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
@@ -37,9 +37,10 @@ export const useOfflineMode = () => {
       }
 
       if (data) {
-        setCurrentSession(data);
+        const session = data as OfflineSession;
+        setCurrentSession(session);
         setIsOffline(true);
-        const expiresAt = new Date(data.expires_at).getTime();
+        const expiresAt = new Date(session.expires_at).getTime();
         const now = new Date().getTime();
         const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
         setOfflineTimeRemaining(timeLeft);
@@ -59,14 +60,14 @@ export const useOfflineMode = () => {
     try {
       // Deactivate any existing sessions
       await supabase
-        .from('offline_sessions')
+        .from('offline_sessions' as any)
         .update({ is_active: false })
         .eq('user_id', user.id)
         .eq('is_active', true);
 
       // Create new session
       const { data, error } = await supabase
-        .from('offline_sessions')
+        .from('offline_sessions' as any)
         .insert([{
           user_id: user.id,
           is_active: true,
@@ -79,7 +80,8 @@ export const useOfflineMode = () => {
         return;
       }
 
-      setCurrentSession(data);
+      const session = data as OfflineSession;
+      setCurrentSession(session);
       setIsOffline(true);
       setOfflineTimeRemaining(15 * 60); // 15 minutes in seconds
     } catch (error) {
@@ -92,7 +94,7 @@ export const useOfflineMode = () => {
 
     try {
       await supabase
-        .from('offline_sessions')
+        .from('offline_sessions' as any)
         .update({ is_active: false })
         .eq('id', currentSession.id);
 
