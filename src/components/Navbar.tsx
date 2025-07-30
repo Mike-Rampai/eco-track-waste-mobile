@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon, SettingsIcon } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon, SettingsIcon, ArrowLeftIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useOfflineMode } from '@/hooks/useOfflineMode';
@@ -21,9 +21,13 @@ import {
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isOffline, getOfflineFeatures } = useOfflineMode();
   const offlineFeatures = getOfflineFeatures();
+
+  const canGoBack = window.history.length > 1;
+  const showBackButton = location.pathname !== '/';
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -111,6 +115,19 @@ const Navbar = () => {
         </Link>
         
         <nav className="flex overflow-x-auto gap-1 items-center w-full sm:w-auto pb-safe scrollbar-hide">
+          {showBackButton && (
+            <Button 
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="flutter-button whitespace-nowrap"
+            >
+              <ArrowLeftIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Back</span>
+              <span className="sm:hidden text-xs">←</span>
+            </Button>
+          )}
+          
           <Link to="/">
             <Button 
               variant={isActive('/') ? "default" : "ghost"}
