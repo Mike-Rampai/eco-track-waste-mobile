@@ -341,6 +341,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_eco_points: {
+        Args: { user_id: string; points: number }
+        Returns: undefined
+      }
       get_admin_role: {
         Args: { user_id?: string }
         Returns: Database["public"]["Enums"]["admin_role"]
@@ -349,8 +353,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      initialize_first_admin: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
       is_admin: {
         Args: { user_id?: string }
+        Returns: boolean
+      }
+      verify_sufficient_balance: {
+        Args: { user_id: string; amount: number; currency?: string }
         Returns: boolean
       }
     }
