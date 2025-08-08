@@ -24,7 +24,23 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { amount, currency, userId, description, userEmail } = await req.json();
+    const requestBody = await req.json();
+    const { amount, currency, userId, description, userEmail } = requestBody;
+
+    // Input validation
+    if (!amount || !userId || !userEmail) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (amount < 10 || amount > 50000) {
+      return new Response(JSON.stringify({ error: 'Amount must be between 10 and 50000' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     console.log('Creating payment intent:', { amount, currency, userId, description });
 
@@ -35,7 +51,7 @@ serve(async (req) => {
       metadata: {
         user_id: userId,
         email: userEmail,
-        description: description
+        description: description || 'E-Cycle payment'
       },
     });
 

@@ -331,19 +331,20 @@ export type Database = {
       }
     }
     Views: {
-      admin_analytics: {
-        Row: {
-          description: string | null
-          metric: string | null
-          value: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       add_eco_points: {
         Args: { user_id: string; points: number }
         Returns: undefined
+      }
+      get_admin_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          metric: string
+          value: number
+          description: string
+        }[]
       }
       get_admin_role: {
         Args: { user_id?: string }

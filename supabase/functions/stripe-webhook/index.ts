@@ -17,13 +17,30 @@ serve(async (req) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const signature = req.headers.get('stripe-signature');
+    
+    if (!signature) {
+      return new Response(JSON.stringify({ error: 'Missing stripe signature' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = await req.text();
 
-    const event = stripeClient.webhooks.constructEvent(
-      body,
-      signature!,
-      stripeWebhookSecret!
-    );
+    let event;
+    try {
+      event = stripeClient.webhooks.constructEvent(
+        body,
+        signature,
+        stripeWebhookSecret!
+      );
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     console.log('Stripe webhook event:', event.type);
 

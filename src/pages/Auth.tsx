@@ -65,6 +65,18 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password || !fullName) return;
+
+    // Basic password strength validation
+    if (password.length < 8) {
+      toast({
+        title: "Password too weak",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -72,6 +84,7 @@ const Auth = () => {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
           },
@@ -89,6 +102,9 @@ const Auth = () => {
           title: "Account Created!",
           description: "Please check your email to confirm your account.",
         });
+        setEmail("");
+        setPassword("");
+        setFullName("");
       }
     } catch (error) {
       toast({
