@@ -15,6 +15,7 @@ import RecycleLocator from "./pages/RecycleLocator";
 import Wallet from "./pages/Wallet";
 import AIAssistant from "./pages/AIAssistant";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -32,6 +33,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
               <Route path="/register" element={
