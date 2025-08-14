@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -161,6 +161,54 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           weight?: number | null
+        }
+        Relationships: []
+      }
+      marketplace_listings: {
+        Row: {
+          condition: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          is_free: boolean
+          location: string
+          price: number
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_free?: boolean
+          location: string
+          price?: number
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_free?: boolean
+          location?: string
+          price?: number
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -335,15 +383,15 @@ export type Database = {
     }
     Functions: {
       add_eco_points: {
-        Args: { user_id: string; points: number }
+        Args: { points: number; user_id: string }
         Returns: undefined
       }
       get_admin_analytics: {
         Args: Record<PropertyKey, never>
         Returns: {
+          description: string
           metric: string
           value: number
-          description: string
         }[]
       }
       get_admin_role: {
@@ -363,7 +411,7 @@ export type Database = {
         Returns: boolean
       }
       verify_sufficient_balance: {
-        Args: { user_id: string; amount: number; currency?: string }
+        Args: { amount: number; currency?: string; user_id: string }
         Returns: boolean
       }
     }

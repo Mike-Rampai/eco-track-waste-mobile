@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Filter, Gift } from 'lucide-react';
+import { PlusCircle, Filter, Gift, Loader2 } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -15,84 +14,140 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import MarketplaceListingForm from '@/components/MarketplaceListingForm';
 import MarketplaceListingCard from '@/components/MarketplaceListingCard';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
-// Sample data for marketplace listings
-const SAMPLE_LISTINGS = [
-  {
-    id: '1',
-    title: 'iPhone 11 Pro',
-    description: 'Good condition, minor scratches on screen. Battery health at 85%.',
-    price: 350,
-    type: 'Mobile',
-    condition: 'Good',
-    isFree: false,
-    location: 'Manhattan, NY',
-    createdAt: new Date('2025-05-15'),
-    imageUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=iPhone+11+Pro',
-    seller: 'Alex Johnson'
-  },
-  {
-    id: '2',
-    title: 'Dell XPS 15 Laptop',
-    description: 'Powerful laptop with 16GB RAM and 512GB SSD. Perfect for developers.',
-    price: 800,
-    type: 'Laptop',
-    condition: 'Very Good',
-    isFree: false,
-    location: 'Brooklyn, NY',
-    createdAt: new Date('2025-05-18'),
-    imageUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=Dell+XPS+15',
-    seller: 'Jordan Smith'
-  },
-  {
-    id: '3',
-    title: 'Free - Old HP Monitor',
-    description: '24" monitor, still works great. Free to anyone who can pick it up.',
-    price: 0,
-    type: 'Computer',
-    condition: 'Fair',
-    isFree: true,
-    location: 'Queens, NY',
-    createdAt: new Date('2025-05-20'),
-    imageUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=HP+Monitor',
-    seller: 'Morgan Lee'
-  },
-  {
-    id: '4',
-    title: 'Logitech Keyboard and Mouse',
-    description: 'Wireless combo, barely used. MX Keys keyboard and MX Master 3 mouse.',
-    price: 120,
-    type: 'Accessories',
-    condition: 'Like New',
-    isFree: false,
-    location: 'Bronx, NY',
-    createdAt: new Date('2025-05-21'),
-    imageUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=Logitech+Setup',
-    seller: 'Jamie Rivera'
-  }
-];
+interface MarketplaceListing {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  type: string;
+  condition: string;
+  location: string;
+  imageUrl: string;
+  isFree: boolean;
+  seller: string;
+  createdAt: Date;
+}
 
 const Marketplace = () => {
-  const [listings, setListings] = useState(SAMPLE_LISTINGS);
+  const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string | undefined>();
   const [filterCondition, setFilterCondition] = useState<string | undefined>();
   const [showFreeOnly, setShowFreeOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  const handleAddListing = (newListing: any) => {
-    const listingWithId = {
-      ...newListing,
-      id: `${listings.length + 1}`,
-      createdAt: new Date(),
-      seller: 'You' // In a real app, this would be the current user's name
+  const { user } = useAuth();
+
+  // Fetch listings from Supabase
+  const fetchListings = async () => {
+    try {
+      const { data: listingsData, error } = await supabase
+        .from('marketplace_listings')
+        .select('*')
+        .eq('is_available', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch user profiles separately
+      const userIds = listingsData?.map(listing => listing.user_id) || [];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      // Transform data to match component expectations
+      const transformedListings = listingsData?.map(listing => {
+        const profile = profilesData?.find(p => p.id === listing.user_id);
+        return {
+          ...listing,
+          seller: profile?.full_name || 'Anonymous',
+          imageUrl: listing.image_url,
+          isFree: listing.is_free,
+          createdAt: new Date(listing.created_at),
+        };
+      }) || [];
+
+      setListings(transformedListings);
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load marketplace listings",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Set up real-time subscription
+  useEffect(() => {
+    fetchListings();
+
+    const channel = supabase
+      .channel('marketplace-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'marketplace_listings'
+        },
+        () => {
+          fetchListings(); // Refetch when any change occurs
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
-    setListings([listingWithId, ...listings]);
-    setIsDialogOpen(false);
-    toast({
-      title: "Listing created successfully",
-      description: "Your item has been added to the marketplace.",
-    });
+  }, []);
+  
+  const handleAddListing = async (newListing: any) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a listing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('marketplace_listings')
+        .insert({
+          user_id: user.id,
+          title: newListing.title,
+          description: newListing.description,
+          price: newListing.price,
+          type: newListing.type,
+          condition: newListing.condition,
+          location: newListing.location,
+          image_url: newListing.imageUrl,
+          is_free: newListing.isFree || newListing.price === 0,
+        });
+
+      if (error) throw error;
+
+      setIsDialogOpen(false);
+      toast({
+        title: "Listing Added",
+        description: "Your item has been listed successfully!",
+      });
+    } catch (error) {
+      console.error('Error adding listing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add listing. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   // Filter listings based on selected filters and search query
@@ -108,7 +163,7 @@ const Marketplace = () => {
     
     // Filter by search query
     if (searchQuery && !listing.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !listing.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+        !(listing.description && listing.description.toLowerCase().includes(searchQuery.toLowerCase()))) {
       return false;
     }
     
@@ -121,6 +176,17 @@ const Marketplace = () => {
       description: "The seller has been notified of your interest. They will contact you soon.",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading marketplace...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 fade-in">
