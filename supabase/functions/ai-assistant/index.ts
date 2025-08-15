@@ -52,6 +52,17 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('OpenAI API error:', data);
+      throw new Error(data.error?.message || 'OpenAI API request failed');
+    }
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI API');
+    }
+    
     const aiResponse = data.choices[0].message.content;
 
     // Log the interaction (optional)
