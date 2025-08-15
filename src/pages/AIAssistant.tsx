@@ -175,8 +175,8 @@ const AIAssistant = () => {
         
         <CardContent className="flex-1 flex flex-col">
           {/* Messages Area */}
-          <ScrollArea className="flex-1 mb-4">
-            <div className="space-y-4 pr-2 p-1">
+          <ScrollArea className="flex-1 mb-4 h-[400px]">
+            <div className="space-y-4 pr-2 p-1 min-h-full">
               {messages.map((message) => (
                 <div
                   key={message.id}
