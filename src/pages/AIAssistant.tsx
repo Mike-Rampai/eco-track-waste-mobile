@@ -168,63 +168,65 @@ const AIAssistant = () => {
         </p>
       </div>
 
-      <Card className="flutter-card h-[600px] flex flex-col">
-        <CardHeader>
+      <Card className="flutter-card h-[700px] flex flex-col">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="text-lg">Chat with E-Waste Expert</CardTitle>
         </CardHeader>
         
-        <CardContent className="flex-1 flex flex-col">
+        <CardContent className="flex-1 flex flex-col overflow-hidden">
           {/* Messages Area */}
-          <ScrollArea className="flex-1 mb-4 h-[400px]">
-            <div className="space-y-4 pr-2 p-1 min-h-full">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex gap-2 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {message.isUser ? <UserIcon className="h-4 w-4" /> : <BotIcon className="h-4 w-4" />}
-                    </div>
-                    <div className={`p-3 rounded-lg ${
-                      message.isUser 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-foreground'
-                    }`}>
-                      <p className="whitespace-pre-line text-sm">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="flex gap-2 max-w-[80%]">
-                    <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0">
-                      <BotIcon className="h-4 w-4" />
-                    </div>
-                    <div className="bg-muted text-foreground p-3 rounded-lg">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="flex-1 mb-4 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="space-y-4 p-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-2 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                        message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {message.isUser ? <UserIcon className="h-4 w-4" /> : <BotIcon className="h-4 w-4" />}
+                      </div>
+                      <div className={`p-3 rounded-lg ${
+                        message.isUser 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted text-foreground'
+                      }`}>
+                        <p className="whitespace-pre-line text-sm leading-relaxed">{message.content}</p>
+                        <p className="text-xs opacity-70 mt-2">
+                          {message.timestamp.toLocaleTimeString()}
+                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+                ))}
+                
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="flex gap-2 max-w-[80%]">
+                      <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                        <BotIcon className="h-4 w-4" />
+                      </div>
+                      <div className="bg-muted text-foreground p-3 rounded-lg">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </div>
 
           {/* Suggested Questions */}
           {messages.length === 1 && (
-            <div className="mb-4">
+            <div className="mb-4 flex-shrink-0">
               <p className="text-sm text-muted-foreground mb-2">Suggested questions:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestedQuestions.map((question, index) => (
@@ -243,7 +245,7 @@ const AIAssistant = () => {
           )}
 
           {/* Input Area */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
