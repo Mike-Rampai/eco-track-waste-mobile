@@ -8,6 +8,7 @@ import { BotIcon, SendIcon, UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import RealtimeAI from '@/components/RealtimeAI';
 
 interface Message {
   id: string;
@@ -20,7 +21,7 @@ const AIAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your E-Waste Assistant. I can help you with questions about electronic waste disposal, recycling guidelines, and environmental impact. What would you like to know?",
+      content: "Hello! I'm your AI Assistant. I can help you with any questions on topics like technology, science, e-waste management, general knowledge, and much more. What would you like to know?",
       isUser: false,
       timestamp: new Date(),
     }
@@ -103,6 +104,14 @@ const AIAssistant = () => {
     setIsLoading(true);
 
     try {
+      // Broadcast typing indicator for real-time updates
+      const channel = supabase.channel('ai-chat-updates');
+      await channel.send({
+        type: 'broadcast',
+        event: 'ai-typing',
+        payload: { typing: true }
+      });
+
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: { 
           message: currentMessage,
@@ -118,6 +127,16 @@ const AIAssistant = () => {
         isUser: false,
         timestamp: new Date(),
       };
+
+      // Broadcast the response for real-time updates
+      await channel.send({
+        type: 'broadcast',
+        event: 'ai-response',
+        payload: { 
+          message: data.response,
+          timestamp: new Date().toISOString()
+        }
+      });
 
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
@@ -141,6 +160,16 @@ const AIAssistant = () => {
     }
   };
 
+  const handleNewRealtimeMessage = (newMessage: { role: 'user' | 'assistant'; content: string; timestamp: Date }) => {
+    const message: Message = {
+      id: Date.now().toString(),
+      content: newMessage.content,
+      isUser: newMessage.role === 'user',
+      timestamp: newMessage.timestamp,
+    };
+    setMessages(prev => [...prev, message]);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -149,11 +178,11 @@ const AIAssistant = () => {
   };
 
   const suggestedQuestions = [
-    "How do I dispose of an old smartphone?",
-    "Where can I recycle my laptop?",
-    "How to safely dispose of batteries?",
-    "What should I do with old TV?",
-    "How to protect my data before disposal?"
+    "Explain quantum computing in simple terms",
+    "How do I properly dispose of old smartphones?",
+    "What's the latest in renewable energy technology?", 
+    "Help me understand machine learning basics",
+    "What are the environmental impacts of e-waste?"
   ];
 
   return (
@@ -164,13 +193,13 @@ const AIAssistant = () => {
           E-Waste AI Assistant
         </h1>
         <p className="text-muted-foreground">
-          Get expert guidance on electronic waste disposal and recycling
+          Ask me anything! I can help with general questions, technology, science, e-waste management, and more.
         </p>
       </div>
 
       <Card className="flutter-card flex-1 flex flex-col rounded-none border-0">
         <CardHeader className="flex-shrink-0">
-          <CardTitle className="text-lg">Chat with E-Waste Expert</CardTitle>
+          <CardTitle className="text-lg">Chat with AI Assistant</CardTitle>
         </CardHeader>
         
         <CardContent className="flex-1 flex flex-col overflow-hidden">
@@ -202,6 +231,8 @@ const AIAssistant = () => {
                     </div>
                   </div>
                 ))}
+                
+                <RealtimeAI messages={messages.map(m => ({ role: m.isUser ? 'user' : 'assistant', content: m.content, timestamp: m.timestamp }))} onNewMessage={handleNewRealtimeMessage} />
                 
                 {isLoading && (
                   <div className="flex gap-3 justify-start">
@@ -250,7 +281,7 @@ const AIAssistant = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about e-waste disposal..."
+              placeholder="Ask me anything..."
               className="flutter-input"
               disabled={isLoading}
             />

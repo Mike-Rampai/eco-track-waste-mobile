@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon, SettingsIcon, ArrowLeftIcon } from 'lucide-react';
+import { RecycleIcon, PlusCircleIcon, CalendarIcon, InfoIcon, ShoppingBagIcon, MapPinIcon, WalletIcon, BotIcon, LogOutIcon, UserIcon, LockIcon, SettingsIcon, ArrowLeftIcon, ShieldIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useOfflineMode } from '@/hooks/useOfflineMode';
 import {
   DropdownMenu,
@@ -23,6 +24,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin, userRole, loading: adminLoading } = useAdmin();
   const { isOffline, getOfflineFeatures } = useOfflineMode();
   const offlineFeatures = getOfflineFeatures();
 
@@ -218,13 +220,21 @@ const Navbar = () => {
                   <span className="sm:hidden text-xs">User</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="flex items-center">
                     <SettingsIcon className="h-4 w-4 mr-2" />
                     Profile Settings
                   </Link>
                 </DropdownMenuItem>
+                {isAdmin && !adminLoading && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="flex items-center">
+                      <ShieldIcon className="h-4 w-4 mr-2" />
+                      Admin Panel {userRole && `(${userRole})`}
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   <LogOutIcon className="h-4 w-4 mr-2" />

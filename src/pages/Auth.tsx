@@ -171,6 +171,14 @@ const Auth = () => {
           <CardDescription>
             Join the movement for sustainable e-waste management
           </CardDescription>
+          <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+            <p className="font-medium mb-2">Login Options:</p>
+            <p>• <strong>Regular User:</strong> Access all features and marketplace</p>
+            <p>• <strong>Admin:</strong> Login normally, admin privileges are automatically detected</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              If you're an admin, you'll see admin features after logging in.
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -203,16 +211,21 @@ const Auth = () => {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Login
                 </Button>
-                <div className="text-center">
+                <div className="text-center space-y-2">
                   <Button
                     type="button"
-                    variant="link"
-                    className="text-sm text-muted-foreground"
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-sm"
                     onClick={handleForgotPassword}
                     disabled={loading || !email}
                   >
-                    Forgot your password?
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Forgot your password? Click here to reset
                   </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Enter your email above, then click the reset button to receive password reset instructions.
+                  </p>
                 </div>
               </form>
             </TabsContent>

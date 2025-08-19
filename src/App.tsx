@@ -17,8 +17,10 @@ import AIAssistant from "./pages/AIAssistant";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import OfflineIndicator from "./components/OfflineIndicator";
 
 const queryClient = new QueryClient();
@@ -63,6 +65,11 @@ const App = () => {
                 <ProtectedRoute>
                   <Profile />
                 </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
               } />
               <Route path="*" element={<NotFound />} />
             </Route>
