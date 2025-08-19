@@ -157,9 +157,9 @@ const AIAssistant = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-4 flutter-text-gradient flex items-center justify-center gap-2">
+    <div className="h-screen w-full flex flex-col">
+      <div className="text-center py-6 px-4 flex-shrink-0 border-b">
+        <h1 className="text-3xl font-bold mb-2 flutter-text-gradient flex items-center justify-center gap-2">
           <BotIcon className="h-8 w-8 text-primary" />
           E-Waste AI Assistant
         </h1>
@@ -168,7 +168,7 @@ const AIAssistant = () => {
         </p>
       </div>
 
-      <Card className="flutter-card h-[700px] flex flex-col">
+      <Card className="flutter-card flex-1 flex flex-col rounded-none border-0">
         <CardHeader className="flex-shrink-0">
           <CardTitle className="text-lg">Chat with E-Waste Expert</CardTitle>
         </CardHeader>
