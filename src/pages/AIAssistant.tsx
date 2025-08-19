@@ -103,42 +103,70 @@ const AIAssistant = () => {
     setInputMessage('');
     setIsLoading(true);
 
+    // Add placeholder for AI response
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      content: '',
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, aiMessage]);
+
     try {
-      // Broadcast typing indicator for real-time updates
-      const channel = supabase.channel('ai-chat-updates');
-      await channel.send({
-        type: 'broadcast',
-        event: 'ai-typing',
-        payload: { typing: true }
+      // Convert messages to API format
+      const conversationHistory = messages.map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.content
+      }));
+      conversationHistory.push({ role: 'user', content: currentMessage });
+
+      const response = await fetch(`https://mpvsxmwiriarcwuqmsfu.supabase.co/functions/v1/ai-assistant`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnN4bXdpcmlhcmN3dXFtc2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDU2NTQsImV4cCI6MjA2MzU4MTY1NH0.hve2qa3uEsBTP5a-cjK9JpDs-Gg6zMr7IUcO7xHvzcQ`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: conversationHistory,
+          userId: user?.id
+        }),
       });
 
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { 
-          message: currentMessage,
-          userId: user?.id 
+      if (!response.ok) throw new Error('Failed to get AI response');
+
+      // Handle streaming response
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                accumulatedContent += parsed.content;
+                // Update the AI message with accumulated content
+                setMessages(prev => prev.map(msg => 
+                  msg.id === aiMessageId 
+                    ? { ...msg, content: accumulatedContent }
+                    : msg
+                ));
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
         }
-      });
-
-      if (error) throw error;
-
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.response,
-        isUser: false,
-        timestamp: new Date(),
-      };
-
-      // Broadcast the response for real-time updates
-      await channel.send({
-        type: 'broadcast',
-        event: 'ai-response',
-        payload: { 
-          message: data.response,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      setMessages(prev => [...prev, aiResponse]);
+      }
     } catch (error) {
       console.error('Error calling AI assistant:', error);
       toast({
@@ -147,14 +175,12 @@ const AIAssistant = () => {
         variant: "destructive",
       });
       
-      // Fallback to predefined response
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: getAIResponse(currentMessage),
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
+      // Update with error message
+      setMessages(prev => prev.map(msg => 
+        msg.id === aiMessageId 
+          ? { ...msg, content: "I'm sorry, I encountered an error. Please try again." }
+          : msg
+      ));
     } finally {
       setIsLoading(false);
     }

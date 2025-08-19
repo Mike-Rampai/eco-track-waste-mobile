@@ -19,9 +19,9 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { message, userId } = await req.json();
+    const { messages, userId } = await req.json();
 
-    console.log('AI Assistant request:', { message, userId });
+    console.log('AI Assistant request:', { messages, userId });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,49 +34,68 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful AI assistant that can answer any question across a wide range of topics including:
-            - General knowledge and information
-            - Technology and programming
-            - Science and mathematics  
-            - History and culture
-            - E-waste management and recycling (if asked)
-            - Environmental topics
-            - And any other questions users might have
-            
-            Always be helpful, accurate, and provide clear, informative responses. If you don't know something, say so honestly.`
+            content: `You are ChatGPT, a helpful AI assistant created by OpenAI. You can answer questions on any topic with accuracy and depth. Be conversational, engaging, and provide thorough explanations. Use formatting like bullet points and numbered lists when appropriate to make information clear and readable.`
           },
-          { role: 'user', content: message }
+          ...messages
         ],
-        max_completion_tokens: 500,
+        max_completion_tokens: 1500,
+        stream: true,
       }),
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      throw new Error(data.error?.message || 'OpenAI API request failed');
-    }
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response from OpenAI API');
-    }
-    
-    const aiResponse = data.choices[0].message.content;
-
-    // Log the interaction (optional)
-    if (userId) {
-      await supabase.from('notifications').insert({
-        user_id: userId,
-        title: 'AI Assistant',
-        message: `Asked: "${message.substring(0, 50)}..."`,
-        type: 'in-app'
-      });
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(errorData.error?.message || 'OpenAI API request failed');
     }
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Return streaming response
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') {
+                  controller.close();
+                  return;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed.choices?.[0]?.delta?.content;
+                  if (content) {
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content })}\n\n`));
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     });
   } catch (error) {
     console.error('Error in AI assistant function:', error);
