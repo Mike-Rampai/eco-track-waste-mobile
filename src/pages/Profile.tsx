@@ -9,6 +9,7 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import ProfileForm from '@/components/profile/ProfileForm';
 import OfflineModeCard from '@/components/profile/OfflineModeCard';
+import PasswordChangeCard from '@/components/profile/PasswordChangeCard';
 
 interface UserProfile {
   id: string;
@@ -178,6 +179,8 @@ const Profile = () => {
             )}
           </CardContent>
         </Card>
+
+        <PasswordChangeCard />
       </div>
     </div>
   );
