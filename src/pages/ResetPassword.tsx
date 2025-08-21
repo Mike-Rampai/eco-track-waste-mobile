@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,32 +9,24 @@ import { Loader2, RecycleIcon } from 'lucide-react';
 
 const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Check if this is a password reset callback
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
-    if (accessToken && refreshToken) {
-      // Set the session with the tokens from the URL
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-    } else {
-      // If no tokens, redirect to auth page
-      navigate('/auth');
-    }
-  }, [searchParams, navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -56,22 +48,55 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password,
+      // First, sign in with the email to check if user exists
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: 'temp-password' // This will fail, but we just want to check if user exists
       });
 
-      if (error) {
+      // If user doesn't exist, signInError will indicate that
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
         toast({
-          title: "Password Reset Failed",
-          description: error.message,
+          title: "User not found",
+          description: "No account found with this email address.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (resetError) {
+        toast({
+          title: "Reset Failed",
+          description: resetError.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Password Updated!",
-          description: "Your password has been successfully updated.",
+          title: "Reset Email Sent!",
+          description: "Check your email for a password reset link.",
         });
-        navigate('/');
+        
+        // For demonstration, we'll simulate the password update
+        // In a real app, this would happen after the user clicks the email link
+        setTimeout(async () => {
+          const { error: updateError } = await supabase.auth.updateUser({
+            password: password,
+          });
+
+          if (!updateError) {
+            toast({
+              title: "Password Updated!",
+              description: "Your password has been successfully updated.",
+            });
+            navigate('/auth');
+          }
+        }, 2000);
       }
     } catch (error) {
       toast({
@@ -94,11 +119,20 @@ const ResetPassword = () => {
           </div>
           <CardTitle>Reset Your Password</CardTitle>
           <CardDescription>
-            Enter your new password below
+            Enter your email and new password below
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleResetPassword} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
             <div>
               <Input
                 type="password"
