@@ -121,10 +121,13 @@ const AIAssistant = () => {
       }));
       conversationHistory.push({ role: 'user', content: currentMessage });
 
+      // Get the session token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await fetch(`https://mpvsxmwiriarcwuqmsfu.supabase.co/functions/v1/ai-assistant`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnN4bXdpcmlhcmN3dXFtc2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDU2NTQsImV4cCI6MjA2MzU4MTY1NH0.hve2qa3uEsBTP5a-cjK9JpDs-Gg6zMr7IUcO7xHvzcQ`,
+          'Authorization': `Bearer ${session?.access_token || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnN4bXdpcmlhcmN3dXFtc2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDU2NTQsImV4cCI6MjA2MzU4MTY1NH0.hve2qa3uEsBTP5a-cjK9JpDs-Gg6zMr7IUcO7xHvzcQ'}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -133,7 +136,11 @@ const AIAssistant = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to get AI response');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', response.status, errorText);
+        throw new Error(`API Error (${response.status}): ${errorText}`);
+      }
 
       // Handle streaming response
       const reader = response.body!.getReader();
@@ -169,16 +176,24 @@ const AIAssistant = () => {
       }
     } catch (error) {
       console.error('Error calling AI assistant:', error);
+      
+      // Get more detailed error information
+      let errorMessage = "I'm sorry, I encountered an error. Please try again.";
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        errorMessage = `Error: ${error.message}`;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to get AI response. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       
       // Update with error message
       setMessages(prev => prev.map(msg => 
         msg.id === aiMessageId 
-          ? { ...msg, content: "I'm sorry, I encountered an error. Please try again." }
+          ? { ...msg, content: errorMessage }
           : msg
       ));
     } finally {
