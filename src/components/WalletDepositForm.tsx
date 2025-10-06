@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreditCardIcon, SmartphoneIcon, BanknoteIcon } from 'lucide-react';
+import { CreditCardIcon, SmartphoneIcon, BanknoteIcon, WalletIcon } from 'lucide-react';
 
 const formSchema = z.object({
   amount: z.coerce.number().min(10, { message: 'Minimum deposit amount is R10.' }).max(5000, { message: 'Maximum deposit amount is R5000.' }),
@@ -37,7 +37,9 @@ const WalletDepositForm = ({ onSubmit, onCancel }: WalletDepositFormProps) => {
   const getMethodIcon = (method: string) => {
     switch (method) {
       case 'card': return <CreditCardIcon className="h-4 w-4" />;
-      case 'ewallet': return <SmartphoneIcon className="h-4 w-4" />;
+      case 'paypal': return <WalletIcon className="h-4 w-4" />;
+      case 'googlepay': return <SmartphoneIcon className="h-4 w-4" />;
+      case 'applepay': return <SmartphoneIcon className="h-4 w-4" />;
       case 'bank': return <BanknoteIcon className="h-4 w-4" />;
       default: return null;
     }
@@ -85,10 +87,22 @@ const WalletDepositForm = ({ onSubmit, onCancel }: WalletDepositFormProps) => {
                       Credit/Debit Card
                     </div>
                   </SelectItem>
-                  <SelectItem value="ewallet">
+                  <SelectItem value="paypal">
+                    <div className="flex items-center gap-2">
+                      <WalletIcon className="h-4 w-4" />
+                      PayPal
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="googlepay">
                     <div className="flex items-center gap-2">
                       <SmartphoneIcon className="h-4 w-4" />
-                      E-Wallet (PayPal, etc.)
+                      Google Pay
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="applepay">
+                    <div className="flex items-center gap-2">
+                      <SmartphoneIcon className="h-4 w-4" />
+                      Apple Pay
                     </div>
                   </SelectItem>
                   <SelectItem value="bank">
