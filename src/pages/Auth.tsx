@@ -160,114 +160,176 @@ const Auth = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-eco-green-light/20 to-eco-blue-light/20 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <RecycleIcon className="h-8 w-8 text-eco-green-dark mr-2" />
-            <span className="text-2xl font-bold flutter-text-gradient">E-Cycle</span>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left side - Branding */}
+        <div className="hidden lg:flex flex-col justify-center space-y-6 px-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-2xl bg-primary/10">
+              <RecycleIcon className="h-12 w-12 text-primary" />
+            </div>
+            <span className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">E-Cycle</span>
           </div>
-          <CardTitle>Welcome to E-Cycle</CardTitle>
-          <CardDescription>
-            Join the movement for sustainable e-waste management
-          </CardDescription>
-          <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-            <p className="font-medium mb-2">Login Options:</p>
-            <p>• <strong>Regular User:</strong> Access all features and marketplace</p>
-            <p>• <strong>Admin:</strong> Login normally, admin privileges are automatically detected</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              If you're an admin, you'll see admin features after logging in.
-            </p>
+          <h1 className="text-4xl font-bold leading-tight">
+            Join the Future of <span className="text-primary">Sustainable E-Waste</span> Management
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Transform electronic waste into opportunity. Buy, sell, and recycle responsibly with our platform.
+          </p>
+          <div className="space-y-3 pt-4">
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <div>
+                <p className="font-semibold">Track Your Impact</p>
+                <p className="text-sm text-muted-foreground">Monitor your recycling contributions in real-time</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <div>
+                <p className="font-semibold">Marketplace Access</p>
+                <p className="text-sm text-muted-foreground">Buy and sell recycled electronics safely</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <div>
+                <p className="font-semibold">Earn Rewards</p>
+                <p className="text-sm text-muted-foreground">Get incentivized for responsible recycling</p>
+              </div>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+        </div>
 
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Login
-                </Button>
-                <div className="text-center space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-sm"
-                    onClick={handleForgotPassword}
-                    disabled={loading || !email}
-                  >
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Forgot your password? Click here to reset
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Enter your email above, then click the reset button to receive password reset instructions.
-                  </p>
-                </div>
-              </form>
-            </TabsContent>
+        {/* Right side - Auth Forms */}
+        <Card className="w-full shadow-2xl border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="space-y-2 text-center lg:text-left pb-8">
+            <div className="flex lg:hidden items-center justify-center gap-2 mb-4">
+              <RecycleIcon className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">E-Cycle</span>
+            </div>
+            <CardTitle className="text-3xl">Welcome Back</CardTitle>
+            <CardDescription className="text-base">
+              Sign in to continue your sustainability journey
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
+                <TabsTrigger value="login" className="text-base">Login</TabsTrigger>
+                <TabsTrigger value="signup" className="text-base">Sign Up</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Full Name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
+              <TabsContent value="login" className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email Address</label>
                     <Input
                       type="email"
-                      placeholder="Email"
+                      placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="h-12"
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password</label>
                     <Input
                       type="password"
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="h-12"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
+                  <Button type="submit" className="w-full h-12 text-base" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                    Sign In
+                  </Button>
+                  
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full h-12 text-sm"
+                    onClick={handleForgotPassword}
+                    disabled={loading || !email}
+                  >
+                    Forgot your password?
                   </Button>
                 </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </TabsContent>
+
+              <TabsContent value="signup" className="space-y-4">
+                <form onSubmit={handleSignup} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Full Name</label>
+                    <Input
+                      type="text"
+                      placeholder="John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email Address</label>
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password</label>
+                    <Input
+                      type="password"
+                      placeholder="At least 8 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-12"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Must be at least 8 characters long
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full h-12 text-base" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                    Create Account
+                  </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground pt-4">
+                    By signing up, you agree to our Terms of Service and Privacy Policy
+                  </p>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
