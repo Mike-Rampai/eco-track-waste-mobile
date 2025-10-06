@@ -122,6 +122,54 @@ export type Database = {
         }
         Relationships: []
       }
+      dumping_reports: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          latitude: number | null
+          location: string
+          longitude: number | null
+          recommendations: string | null
+          severity: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          waste_type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          recommendations?: string | null
+          severity: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          waste_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          recommendations?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          waste_type?: string
+        }
+        Relationships: []
+      }
       e_waste_items: {
         Row: {
           category: string

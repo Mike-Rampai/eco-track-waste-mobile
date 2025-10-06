@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RecycleIcon, InfoIcon, AlertTriangle } from 'lucide-react';
+import { RecycleIcon, InfoIcon, AlertTriangle, History } from 'lucide-react';
 import DumpingReportForm from '@/components/DumpingReportForm';
+import { DumpingReportHistory } from '@/components/DumpingReportHistory';
 
 const Information = () => {
   return (
@@ -10,7 +11,7 @@ const Information = () => {
       <h1 className="text-3xl font-bold mb-8 text-center flutter-text-gradient">E-Waste Information & Resources</h1>
       
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="info" className="flutter-tab">
             <InfoIcon className="h-4 w-4 mr-2" />
             General Info
@@ -22,6 +23,10 @@ const Information = () => {
           <TabsTrigger value="report" className="flutter-tab">
             <AlertTriangle className="h-4 w-4 mr-2" />
             Report Dumping
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flutter-tab">
+            <History className="h-4 w-4 mr-2" />
+            Report History
           </TabsTrigger>
         </TabsList>
         
@@ -149,6 +154,10 @@ const Information = () => {
         
         <TabsContent value="report" className="fade-in">
           <DumpingReportForm />
+        </TabsContent>
+
+        <TabsContent value="history" className="fade-in">
+          <DumpingReportHistory />
         </TabsContent>
       </Tabs>
     </div>

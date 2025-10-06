@@ -11,6 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { MapPin, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   description: z.string().min(10, {
@@ -113,7 +114,18 @@ const DumpingReportForm = () => {
   const onSubmit = async (data: FormValues) => {
     setIsAnalyzing(true);
     try {
-      // In a real app, you might upload the image to a server here
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Authentication Required", {
+          description: "Please sign in to report illegal dumping.",
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
+      // Analyze with AI
       const aiResult = await analyzeWasteWithAI(
         data.image || null, 
         data.description,
@@ -121,22 +133,59 @@ const DumpingReportForm = () => {
       );
       
       setAnalyzeResult(aiResult);
+
+      // Upload image if provided
+      let imageUrl = null;
+      if (data.image) {
+        const fileExt = data.image.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('userdata')
+          .upload(fileName, data.image);
+
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('userdata')
+          .getPublicUrl(fileName);
+        imageUrl = publicUrl;
+      }
+
+      // Extract coordinates from location
+      const coordinates = data.location.match(/-?\d+\.\d+/g);
+      const latitude = coordinates?.[0] ? parseFloat(coordinates[0]) : null;
+      const longitude = coordinates?.[1] ? parseFloat(coordinates[1]) : null;
+
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('dumping_reports')
+        .insert({
+          user_id: user.id,
+          description: data.description,
+          location: data.location,
+          latitude,
+          longitude,
+          waste_type: data.wasteType,
+          image_url: imageUrl,
+          severity: aiResult.severity.toLowerCase(),
+          recommendations: aiResult.recommendations,
+          status: 'pending'
+        });
+
+      if (dbError) throw dbError;
       
-      toast.success("Report analyzed successfully", {
-        description: `Severity level: ${aiResult.severity}`,
+      toast.success("Report Submitted", {
+        description: `Severity level: ${aiResult.severity}. Your report has been submitted successfully.`,
       });
-      
-      // Here you would save the report to a database in a real application
-      console.log("Report data:", {
-        ...data,
-        severity: aiResult.severity,
-        recommendations: aiResult.recommendations,
-        timestamp: new Date().toISOString()
-      });
+
+      // Reset form
+      form.reset();
+      setImagePreview(null);
+      setAnalyzeResult(null);
       
     } catch (error) {
-      console.error("Error analyzing report:", error);
-      toast.error("Error analyzing report");
+      console.error("Error submitting report:", error);
+      toast.error("Error submitting report. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
