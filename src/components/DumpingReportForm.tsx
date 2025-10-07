@@ -36,34 +36,22 @@ const wasteTypes = [
   { value: 'other', label: 'Other hazardous' },
 ];
 
-// Simulated AI analysis function
-const analyzeWasteWithAI = async (image: File | null, description: string, wasteType: string) => {
-  // In a real application, this would call an AI API like Google Cloud Vision or Azure Computer Vision
-  return new Promise<{severity: string; recommendations: string}>(resolve => {
-    setTimeout(() => {
-      // Simulated AI response
-      const severityLevels = ['Low', 'Medium', 'High', 'Critical'];
-      const severity = severityLevels[Math.floor(Math.random() * severityLevels.length)];
-      
-      let recommendations = '';
-      if (wasteType === 'electronics') {
-        recommendations = 'Electronics contain heavy metals. Arrange specialized pickup with proper handling procedures.';
-      } else if (wasteType === 'batteries') {
-        recommendations = 'Batteries pose fire and chemical hazards. Immediate containment and proper disposal required.';
-      } else if (severity === 'Critical') {
-        recommendations = 'Immediate attention required. Contact environmental authorities for emergency cleanup.';
-      } else if (severity === 'High') {
-        recommendations = 'Schedule pickup within 24-48 hours. Ensure area is cordoned off to prevent further contamination.';
-      } else {
-        recommendations = 'Standard pickup procedures can be followed. Educate local community about proper disposal practices.';
-      }
-      
-      resolve({
-        severity,
-        recommendations
-      });
-    }, 2000); // Simulate API delay
+// Real AI analysis function using OpenAI
+const analyzeWasteWithAI = async (description: string, wasteType: string, location: string) => {
+  const { data, error } = await supabase.functions.invoke('analyze-dumping-report', {
+    body: {
+      description,
+      wasteType,
+      location
+    }
   });
+
+  if (error) {
+    console.error('AI analysis error:', error);
+    throw new Error('Failed to analyze dumping site');
+  }
+
+  return data as {severity: string; recommendations: string};
 };
 
 const DumpingReportForm = () => {
@@ -127,9 +115,9 @@ const DumpingReportForm = () => {
 
       // Analyze with AI
       const aiResult = await analyzeWasteWithAI(
-        data.image || null, 
         data.description,
-        data.wasteType
+        data.wasteType,
+        data.location
       );
       
       setAnalyzeResult(aiResult);

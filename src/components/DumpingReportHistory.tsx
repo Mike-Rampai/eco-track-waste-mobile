@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 
 interface DumpingReport {
   id: string;
@@ -24,6 +25,45 @@ export const DumpingReportHistory = () => {
 
   useEffect(() => {
     fetchReports();
+
+    // Set up real-time subscription for status changes
+    const channel = supabase
+      .channel('dumping-reports-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'dumping_reports'
+        },
+        (payload) => {
+          console.log('Report status updated:', payload);
+          const updatedReport = payload.new as DumpingReport;
+          
+          // Update local state
+          setReports(prev => 
+            prev.map(report => 
+              report.id === updatedReport.id ? updatedReport : report
+            )
+          );
+
+          // Show alert notification
+          const statusMessages = {
+            pending: 'Your report is pending review',
+            in_progress: 'Action is being taken on your report',
+            resolved: 'Your report has been resolved'
+          };
+
+          sonnerToast.success('Report Status Updated', {
+            description: `${statusMessages[updatedReport.status as keyof typeof statusMessages] || 'Status changed'} - ${updatedReport.waste_type}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchReports = async () => {
