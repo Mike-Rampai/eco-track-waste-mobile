@@ -6,22 +6,73 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RecycleIcon } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
 
 const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [step, setStep] = useState<'email' | 'verify'>('email');
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
       toast({
         title: "Email required",
         description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-password-reset-otp', {
+        body: { email }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "OTP Sent!",
+        description: "Check your email for the verification code.",
+      });
+      
+      setStep('verify');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (otp.length !== 6) {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter the 6-digit code.",
         variant: "destructive",
       });
       return;
@@ -48,60 +99,31 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // First, sign in with the email to check if user exists
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: 'temp-password' // This will fail, but we just want to check if user exists
+      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
+        body: { email, otp, newPassword: password }
       });
 
-      // If user doesn't exist, signInError will indicate that
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
+      if (error) throw error;
+
+      if (data?.error) {
         toast({
-          title: "User not found",
-          description: "No account found with this email address.",
+          title: "Error",
+          description: data.error,
           variant: "destructive",
         });
-        setLoading(false);
         return;
       }
 
-      // Send password reset email
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+      toast({
+        title: "Password Updated!",
+        description: "Your password has been successfully updated.",
       });
-
-      if (resetError) {
-        toast({
-          title: "Reset Failed",
-          description: resetError.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Reset Email Sent!",
-          description: "Check your email for a password reset link.",
-        });
-        
-        // For demonstration, we'll simulate the password update
-        // In a real app, this would happen after the user clicks the email link
-        setTimeout(async () => {
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
-          });
-
-          if (!updateError) {
-            toast({
-              title: "Password Updated!",
-              description: "Your password has been successfully updated.",
-            });
-            navigate('/auth');
-          }
-        }, 2000);
-      }
-    } catch (error) {
+      
+      navigate('/auth');
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: error.message || "Failed to reset password",
         variant: "destructive",
       });
     } finally {
@@ -119,45 +141,88 @@ const ResetPassword = () => {
           </div>
           <CardTitle>Reset Your Password</CardTitle>
           <CardDescription>
-            Enter your email and new password below
+            {step === 'email' 
+              ? 'Enter your email to receive an OTP' 
+              : 'Enter the OTP and your new password'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div>
-              <Input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="New Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Confirm New Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={8}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update Password
-            </Button>
-          </form>
+          {step === 'email' ? (
+            <form onSubmit={handleSendOTP} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send OTP
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAndReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="otp">Enter 6-Digit OTP</Label>
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="password">New Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Min 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => setStep('email')}
+                  disabled={loading}
+                >
+                  Back
+                </Button>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Reset Password
+                </Button>
+              </div>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>
