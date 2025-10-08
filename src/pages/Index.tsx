@@ -1,14 +1,90 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RecycleIcon, SmartphoneIcon, LaptopIcon, TruckIcon, MapPinIcon, ShoppingBagIcon, WalletIcon, UserPlusIcon, ArrowRightIcon } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalDevices: 0,
+    totalUsers: 0,
+    co2Saved: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch total devices from e_waste_items
+        const { count: devicesCount } = await supabase
+          .from('e_waste_items')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch total users from profiles
+        const { count: usersCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        // Calculate CO2 saved (estimated 15kg per device)
+        const co2PerDevice = 15;
+        const totalCo2 = (devicesCount || 0) * co2PerDevice;
+
+        setStats({
+          totalDevices: devicesCount || 0,
+          totalUsers: usersCount || 0,
+          co2Saved: totalCo2
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+
+    // Subscribe to real-time updates
+    const devicesChannel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'e_waste_items'
+        },
+        () => fetchStats()
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => fetchStats()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(devicesChannel);
+    };
+  }, []);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toLocaleString();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-eco-green-light/10 to-eco-blue-light/10">
@@ -64,19 +140,19 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <StatCard
               title="Devices Recycled"
-              value="12,437"
+              value={loading ? "..." : formatNumber(stats.totalDevices)}
               description="Electronic devices properly recycled"
               icon={<RecycleIcon className="h-8 w-8" />}
             />
             <StatCard
               title="CO₂ Saved"
-              value="2.1M kg"
+              value={loading ? "..." : `${formatNumber(stats.co2Saved)} kg`}
               description="Carbon emissions prevented"
               icon={<SmartphoneIcon className="h-8 w-8" />}
             />
             <StatCard
               title="Active Users"
-              value="5,892"
+              value={loading ? "..." : formatNumber(stats.totalUsers)}
               description="Community members making a difference"
               icon={<LaptopIcon className="h-8 w-8" />}
             />
