@@ -19,9 +19,9 @@ serve(async (req) => {
   try {
     const { description, wasteType, location }: AnalyzeRequest = await req.json();
 
-    const openAIKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIKey) {
-      throw new Error('OpenAI API key not configured');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('Lovable API key not configured');
     }
 
     const prompt = `You are an environmental expert analyzing illegal e-waste dumping sites. 
@@ -41,14 +41,14 @@ Return your response in this exact JSON format:
   "recommendations": "detailed recommendations text"
 }`;
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -64,13 +64,13 @@ Return your response in this exact JSON format:
       }),
     });
 
-    if (!openAIResponse.ok) {
-      const error = await openAIResponse.text();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+    if (!aiResponse.ok) {
+      const error = await aiResponse.text();
+      console.error('AI API error:', error);
+      throw new Error(`AI API error: ${aiResponse.status}`);
     }
 
-    const data = await openAIResponse.json();
+    const data = await aiResponse.json();
     const content = data.choices[0].message.content;
     
     // Parse the JSON response from OpenAI
@@ -78,7 +78,7 @@ Return your response in this exact JSON format:
     try {
       analysis = JSON.parse(content);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content);
+      console.error('Failed to parse AI response:', content);
       // Fallback response
       analysis = {
         severity: 'medium',
