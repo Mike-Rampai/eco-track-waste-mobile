@@ -9,18 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RecycleIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Label } from '@/components/ui/label';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [resetStep, setResetStep] = useState<'email' | 'verify' | null>(null);
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -123,122 +117,6 @@ const Auth = () => {
     }
   };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('send-password-reset-otp', {
-        body: { email }
-      });
-
-      if (error) throw error;
-
-      if (data?.error) {
-        toast({
-          title: "Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "OTP Sent!",
-        description: "Check your email for the verification code.",
-      });
-      
-      setResetStep('verify');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send OTP",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyAndReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (otp.length !== 6) {
-      toast({
-        title: "Invalid OTP",
-        description: "Please enter the 6-digit code.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure both passwords are identical.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      toast({
-        title: "Password too weak",
-        description: "Password must be at least 8 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
-        body: { email, otp, newPassword }
-      });
-
-      if (error) throw error;
-
-      if (data?.error) {
-        toast({
-          title: "Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Password Updated!",
-        description: "Your password has been successfully updated. Please log in with your new password.",
-      });
-      
-      // Reset all form states
-      setResetStep(null);
-      setOtp('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-      setPassword('');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reset password",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
   return (
@@ -309,8 +187,7 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="login" className="space-y-4">
-                {resetStep === null ? (
-                  <form onSubmit={handleLogin} className="space-y-5">
+                <form onSubmit={handleLogin} className="space-y-5">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Email Address</label>
                       <Input
@@ -353,102 +230,12 @@ const Auth = () => {
                       type="button"
                       variant="ghost"
                       className="w-full h-12 text-sm"
-                      onClick={() => setResetStep('email')}
+                      onClick={() => navigate('/reset-password')}
                       disabled={loading}
                     >
                       Forgot your password?
                     </Button>
                   </form>
-                ) : resetStep === 'email' ? (
-                  <form onSubmit={handleSendOTP} className="space-y-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-email">Email Address</Label>
-                      <Input
-                        id="reset-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="h-12"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="w-full h-12" 
-                        onClick={() => setResetStep(null)}
-                        disabled={loading}
-                      >
-                        Back to Login
-                      </Button>
-                      <Button type="submit" className="w-full h-12" disabled={loading}>
-                        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        Send OTP
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyAndReset} className="space-y-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="otp">Enter 6-Digit OTP</Label>
-                      <div className="flex justify-center">
-                        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        placeholder="Min 8 characters"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        className="h-12"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-new-password">Confirm New Password</Label>
-                      <Input
-                        id="confirm-new-password"
-                        type="password"
-                        placeholder="Re-enter password"
-                        value={confirmNewPassword}
-                        onChange={(e) => setConfirmNewPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        className="h-12"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="w-full h-12" 
-                        onClick={() => setResetStep('email')}
-                        disabled={loading}
-                      >
-                        Back
-                      </Button>
-                      <Button type="submit" className="w-full h-12" disabled={loading}>
-                        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        Reset Password
-                      </Button>
-                    </div>
-                  </form>
-                )}
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
