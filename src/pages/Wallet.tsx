@@ -27,53 +27,9 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 
-// Sample transaction data
-const SAMPLE_TRANSACTIONS = [
-  {
-    id: '1',
-    type: 'sale',
-    amount: 350,
-    description: 'Sold iPhone 11 Pro',
-    date: new Date('2025-05-20'),
-    status: 'completed'
-  },
-  {
-    id: '2',
-    type: 'purchase',
-    amount: -120,
-    description: 'Bought Logitech Mouse',
-    date: new Date('2025-05-18'),
-    status: 'completed'
-  },
-  {
-    id: '3',
-    type: 'recycling',
-    amount: 25,
-    description: 'Recycled old laptop',
-    date: new Date('2025-05-15'),
-    status: 'completed'
-  },
-  {
-    id: '4',
-    type: 'withdrawal',
-    amount: -200,
-    description: 'Withdrew to bank account',
-    date: new Date('2025-05-12'),
-    status: 'completed'
-  },
-  {
-    id: '5',
-    type: 'deposit',
-    amount: 100,
-    description: 'Added funds',
-    date: new Date('2025-05-10'),
-    status: 'completed'
-  }
-];
-
 const Wallet = () => {
-  const [transactions, setTransactions] = useState(SAMPLE_TRANSACTIONS);
-  const [balance, setBalance] = useState(455); // Current balance in ZAR
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [balance, setBalance] = useState(0); // Current balance in ZAR
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
