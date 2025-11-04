@@ -44,6 +44,65 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_request_items: {
         Row: {
           collection_request_id: string | null
@@ -462,7 +521,7 @@ export type Database = {
         Returns: undefined
       }
       get_admin_analytics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           description: string
           metric: string
@@ -473,18 +532,9 @@ export type Database = {
         Args: { user_id?: string }
         Returns: Database["public"]["Enums"]["admin_role"]
       }
-      get_realtime_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      initialize_first_admin: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
-      is_admin: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
+      get_realtime_stats: { Args: never; Returns: Json }
+      initialize_first_admin: { Args: { user_email: string }; Returns: boolean }
+      is_admin: { Args: { user_id?: string }; Returns: boolean }
       verify_sufficient_balance: {
         Args: { amount: number; currency?: string; user_id: string }
         Returns: boolean

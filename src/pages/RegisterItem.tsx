@@ -13,6 +13,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Camera, Upload, Smartphone, Laptop, Monitor, Printer, Check } from 'lucide-react';
 import { WasteType } from '@/components/WasteItemCard';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define form schema
 const formSchema = z.object({
@@ -52,17 +53,61 @@ const RegisterItem = () => {
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     
-    // Simulate API call
     try {
-      // In a real app, you would send the data to your backend here
-      console.log('Form submitted with values:', values);
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to register items.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Save to e_waste_items table
+      const { data: wasteItem, error: wasteError } = await supabase
+        .from('e_waste_items')
+        .insert({
+          user_id: user.id,
+          name: values.name,
+          category: values.type,
+          condition: values.condition,
+          description: values.description || null,
+          image_url: values.imageUrl || null,
+          status: 'registered'
+        })
+        .select()
+        .single();
+
+      if (wasteError) throw wasteError;
+
+      // Also add to marketplace if item is in working or damaged condition
+      if (values.condition === 'Working' || values.condition === 'Damaged') {
+        const { error: marketplaceError } = await supabase
+          .from('marketplace_listings')
+          .insert({
+            user_id: user.id,
+            title: values.name,
+            description: values.description || `${values.brand} ${values.model || ''} ${values.type}`.trim(),
+            price: 0,
+            is_free: true,
+            type: values.type,
+            condition: values.condition,
+            location: 'Not specified',
+            image_url: values.imageUrl || null,
+            is_available: true
+          });
+
+        if (marketplaceError) {
+          console.error('Error adding to marketplace:', marketplaceError);
+          // Don't fail the whole operation if marketplace listing fails
+        }
+      }
       
       toast({
         title: "Item registered successfully!",
-        description: "Your e-waste item has been added to the system.",
+        description: "Your e-waste item has been added to the system and marketplace.",
       });
       
       // Reset form

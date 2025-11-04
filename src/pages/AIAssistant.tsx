@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import RealtimeAI from '@/components/RealtimeAI';
+import { ChatHistory } from '@/components/ChatHistory';
 
 interface Message {
   id: string;
@@ -28,6 +29,7 @@ const AIAssistant = () => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -88,6 +90,50 @@ const AIAssistant = () => {
     return "I can help you with e-waste disposal questions! Here are some topics I can assist with:\n\n• Smartphone and mobile phone disposal\n• Computer and laptop recycling\n• Battery disposal guidelines\n• TV and monitor recycling\n• Printer and scanner disposal\n• Cable and charger recycling\n• Large appliance disposal\n• Data security before disposal\n• Environmental impact of e-waste\n• Finding recycling locations\n\nPlease ask me about any specific electronic device or e-waste topic!";
   };
 
+  const saveMessage = async (conversationId: string, role: 'user' | 'assistant', content: string) => {
+    if (!user) return;
+
+    try {
+      await supabase.from('chat_messages').insert({
+        conversation_id: conversationId,
+        user_id: user.id,
+        role,
+        content
+      });
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
+  const createOrGetConversation = async (firstMessage: string) => {
+    if (!user) return null;
+
+    try {
+      // Create new conversation if none exists
+      if (!currentConversationId) {
+        const title = firstMessage.substring(0, 50) + (firstMessage.length > 50 ? '...' : '');
+        const { data, error } = await supabase
+          .from('chat_conversations')
+          .insert({
+            user_id: user.id,
+            title
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        setCurrentConversationId(data.id);
+        return data.id;
+      }
+      
+      return currentConversationId;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      return null;
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -114,6 +160,14 @@ const AIAssistant = () => {
     setMessages(prev => [...prev, aiMessage]);
 
     try {
+      // Get or create conversation
+      const conversationId = await createOrGetConversation(currentMessage);
+      
+      // Save user message
+      if (conversationId) {
+        await saveMessage(conversationId, 'user', currentMessage);
+      }
+
       // Convert messages to API format
       const conversationHistory = messages.map(msg => ({
         role: msg.isUser ? 'user' : 'assistant',
@@ -211,6 +265,17 @@ const AIAssistant = () => {
     setMessages(prev => [...prev, message]);
   };
 
+  const handleLoadConversation = (conversationId: string, loadedMessages: any[]) => {
+    setCurrentConversationId(conversationId);
+    const formattedMessages = loadedMessages.map(msg => ({
+      id: msg.id,
+      content: msg.content,
+      isUser: msg.role === 'user',
+      timestamp: new Date(msg.created_at)
+    }));
+    setMessages(formattedMessages);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -240,7 +305,10 @@ const AIAssistant = () => {
 
       <Card className="flutter-card flex-1 flex flex-col rounded-none border-0">
         <CardHeader className="flex-shrink-0">
-          <CardTitle className="text-lg">Chat with AI Assistant</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Chat with AI Assistant</CardTitle>
+            <ChatHistory onLoadConversation={handleLoadConversation} />
+          </div>
         </CardHeader>
         
         <CardContent className="flex-1 flex flex-col overflow-hidden">

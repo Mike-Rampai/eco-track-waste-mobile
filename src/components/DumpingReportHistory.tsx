@@ -190,10 +190,12 @@ export const DumpingReportHistory = () => {
                 <h4 className="font-semibold text-sm mb-1">Description</h4>
                 <p className="text-sm text-muted-foreground">{report.description}</p>
               </div>
-              <div>
-                <h4 className="font-semibold text-sm mb-1">AI Recommendations</h4>
-                <p className="text-sm text-muted-foreground">{report.recommendations}</p>
-              </div>
+              {report.recommendations && (
+                <div>
+                  <h4 className="font-semibold text-sm mb-1">AI Recommendations</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{report.recommendations}</p>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Reported on {new Date(report.created_at).toLocaleDateString()} at{' '}
                 {new Date(report.created_at).toLocaleTimeString()}
